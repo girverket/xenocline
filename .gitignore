@@ -3,6 +3,7 @@ agentic-*.md
 .env 
 dist
 node_modules
+.kodrdriv*
 package-lock.json
 credentials.json
 token.json
