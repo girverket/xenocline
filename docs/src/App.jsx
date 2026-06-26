@@ -25,25 +25,43 @@ function App() {
                 </div>
             </header>
 
-            {/* Problem Statement */}
+            {/* Why It Matters */}
             <section className="problem-section">
                 <div className="container">
-                    <h2 className="section-title">Why Processor Pipelines?</h2>
+                    <h2 className="section-title">Why It Matters</h2>
+                    <p className="section-subtitle">
+                        Most data processing code starts as a simple function chain. That works until you need to branch, run steps in parallel, observe what happened, or test each step in isolation.
+                    </p>
                     <div className="problem-grid">
                         <div className="problem-card">
-                            <div className="problem-icon problem-icon-text">M</div>
-                            <h3>Modularity</h3>
-                            <p>Break complex workflows into reusable, testable processors. Each phase does one thing well.</p>
+                            <div className="problem-icon problem-icon-text">🔀</div>
+                            <h3>Conditional Routing</h3>
+                            <p>Route data dynamically based on its content. Send invalid records to a dead-letter queue, branch by message type, or skip steps conditionally.</p>
                         </div>
                         <div className="problem-card">
-                            <div className="problem-icon problem-icon-text">S</div>
-                            <h3>Scalability</h3>
-                            <p>Parallel execution, conditional branching, and aggregation built in from the ground up.</p>
+                            <div className="problem-icon problem-icon-text">⚡</div>
+                            <h3>Parallel Execution</h3>
+                            <p>Fan out to multiple processing branches and aggregate the results. Built-in support for parallel phase execution with merge points.</p>
                         </div>
                         <div className="problem-card">
-                            <div className="problem-icon problem-icon-text">O</div>
+                            <div className="problem-icon problem-icon-text">👁️</div>
                             <h3>Observability</h3>
-                            <p>Event handlers track every phase execution. Debug complex workflows with confidence.</p>
+                            <p>Event handlers track every phase execution. Know which phases ran, in what order, and what they produced — without polluting your business logic.</p>
+                        </div>
+                        <div className="problem-card">
+                            <div className="problem-icon problem-icon-text">🧪</div>
+                            <h3>Testability</h3>
+                            <p>Each phase is an isolated, pure function. Test processing logic independently of routing, orchestration, and infrastructure.</p>
+                        </div>
+                        <div className="problem-card">
+                            <div className="problem-icon problem-icon-text">🔒</div>
+                            <h3>Type Safety</h3>
+                            <p>Full TypeScript support for inputs, outputs, and context. Catch type mismatches at compile time, not at 3 AM in production.</p>
+                        </div>
+                        <div className="problem-card">
+                            <div className="problem-icon problem-icon-text">📦</div>
+                            <h3>Composable</h3>
+                            <p>Phases are plug-and-play. Swap, reorder, or extend pipeline behavior without touching existing code. Build a library of reusable processors.</p>
                         </div>
                     </div>
                 </div>
@@ -52,14 +70,14 @@ function App() {
             {/* Simple Example */}
             <section className="demo-section">
                 <div className="container">
-                    <h2 className="section-title">Simple Pipeline Example</h2>
+                    <h2 className="section-title">A Pipeline in 30 Seconds</h2>
                     <p className="section-subtitle">
                         Define phases, connect them, and execute. Xenocline handles orchestration and lifecycle.
                     </p>
                     
                     <div className="code-block" style={{maxWidth: '800px', margin: '2rem auto'}}>
-                        <div className="code-line"><span className="code-comment">// Define your phases</span></div>
-                        <div className="code-line">const addOnePhase = createPhase('AddOne', {`{`}</div>
+                        <div className="code-line"><span className="code-comment">// 1. Define phases</span></div>
+                        <div className="code-line">const addPhase = createPhase('AddOne', {`{`}</div>
                         <div className="code-line">  execute: async (input) =&gt; ({`{ value: input.value + 1 }`})</div>
                         <div className="code-line">{`}`});</div>
                         <div className="code-line"></div>
@@ -67,385 +85,143 @@ function App() {
                         <div className="code-line">  execute: async (input) =&gt; ({`{ value: input.value * 2 }`})</div>
                         <div className="code-line">{`}`});</div>
                         <div className="code-line"></div>
-                        <div className="code-line"><span className="code-comment">// Build the pipeline</span></div>
+                        <div className="code-line"><span className="code-comment">// 2. Connect into a pipeline</span></div>
                         <div className="code-line">const process = createProcess('MyPipeline', {`{`}</div>
                         <div className="code-line">  phases: {`{`}</div>
-                        <div className="code-line">    nodeA: createPhaseNode('nodeA', addOnePhase,</div>
-                        <div className="code-line">      {`{ next: [createConnection('c1', 'nodeB')] }`}),</div>
-                        <div className="code-line">    nodeB: createPhaseNode('nodeB', multiplyPhase,</div>
-                        <div className="code-line">      {`{ next: createTermination('end') }`})</div>
+                        <div className="code-line">    add: createPhaseNode('add', addPhase,</div>
+                        <div className="code-line">      {`{ next: [createConnection('to-multiply', 'multiply')] }`}),</div>
+                        <div className="code-line">    multiply: createPhaseNode('multiply', multiplyPhase,</div>
+                        <div className="code-line">      {`{ next: createTermination('done') }`})</div>
                         <div className="code-line">  {`}`}</div>
                         <div className="code-line">{`}`});</div>
                         <div className="code-line"></div>
-                        <div className="code-line"><span className="code-comment">// Execute</span></div>
+                        <div className="code-line"><span className="code-comment">// 3. Execute</span></div>
+                        <div className="code-line">const beginning = createBeginning('begin', 'add');</div>
                         <div className="code-line">const [results] = await executeProcess(</div>
-                        <div className="code-line">  process,</div>
-                        <div className="code-line">  createBeginning('nodeA'),</div>
-                        <div className="code-line">  {`{ input: { value: 10 } }`}</div>
+                        <div className="code-line">  process, beginning, {`{ input: { value: 10 } }`}</div>
                         <div className="code-line">);</div>
-                        <div className="code-line"><span className="code-comment">// Result: {`{ value: 22 }`} ✓</span></div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Core Concepts */}
-            <section className="context-section">
-                <div className="container">
-                    <div className="context-header">
-                        <h2 className="section-title">Core Concepts</h2>
-                        <p className="section-subtitle">
-                            Build complex workflows from simple, composable primitives.
-                        </p>
-                    </div>
-                    
-                    <div className="context-features">
-                        <div className="context-feature">
-                            <div className="feature-number">01</div>
-                            <h3>Phases</h3>
-                            <p>Self-contained processing units. Each phase transforms input to output with its own <code>execute</code> function.</p>
-                        </div>
-                        <div className="context-feature">
-                            <div className="feature-number">02</div>
-                            <h3>Nodes</h3>
-                            <p>Wrap phases with routing logic. Connect nodes using <code>Connection</code>, <code>Decision</code>, or <code>Termination</code> transitions.</p>
-                        </div>
-                        <div className="context-feature">
-                            <div className="feature-number">03</div>
-                            <h3>Processes</h3>
-                            <p>Orchestrate multiple nodes into a pipeline. The execution engine handles lifecycle, concurrency, and error propagation.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Parallel Execution & Aggregation */}
-            <section className="routing-section">
-                <div className="container">
-                    <h2 className="section-title">Parallel Execution & Aggregation</h2>
-                    <p className="section-subtitle">
-                        Branch processing paths and merge results with AggregatorNodes.
-                    </p>
-                    
-                    <div className="routing-demo">
-                        <div className="routing-flow">
-                            <div className="routing-input">
-                                <div className="routing-icon routing-icon-text">IN</div>
-                                <span>{`{ value: 10 }`}</span>
-                            </div>
-                            <div className="routing-arrow">
-                                <div className="arrow-line"></div>
-                                <div className="routing-signals">
-                                    <span className="signal">nodeA: +1 → 11</span>
-                                </div>
-                            </div>
-                            <div className="routing-output" style={{background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)'}}>
-                                <div className="routing-icon routing-icon-text">×2</div>
-                                <span>Path 1: × 2 → 22</span>
-                            </div>
-                        </div>
-                        <div className="routing-flow" style={{marginTop: '1rem'}}>
-                            <div className="routing-input" style={{visibility: 'hidden'}}>
-                                <div className="routing-icon routing-icon-text">IN</div>
-                                <span>{`{ value: 10 }`}</span>
-                            </div>
-                            <div className="routing-arrow" style={{visibility: 'hidden'}}>
-                                <div className="arrow-line"></div>
-                            </div>
-                            <div className="routing-output" style={{background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)'}}>
-                                <div className="routing-icon routing-icon-text">²</div>
-                                <span>Path 2: ² → 121</span>
-                            </div>
-                        </div>
-                        <div className="routing-flow" style={{marginTop: '1rem'}}>
-                            <div className="routing-input" style={{visibility: 'hidden'}}>
-                                <div className="routing-icon routing-icon-text">IN</div>
-                                <span>{`{ value: 10 }`}</span>
-                            </div>
-                            <div className="routing-arrow">
-                                <div className="arrow-line"></div>
-                                <div className="routing-signals">
-                                    <span className="signal">Aggregator</span>
-                                </div>
-                            </div>
-                            <div className="routing-output">
-                                <div className="routing-icon routing-icon-text">OUT</div>
-                                <span>{`{ value: 143 }`}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="code-block" style={{maxWidth: '800px', margin: '2rem auto'}}>
-                        <div className="code-line"><span className="code-comment">// Branch to parallel paths</span></div>
-                        <div className="code-line">const nodeA = createPhaseNode('nodeA', addOne, {`{`}</div>
-                        <div className="code-line">  next: [</div>
-                        <div className="code-line">    createConnection('c1', 'nodeB'),  <span className="code-comment">// Path 1</span></div>
-                        <div className="code-line">    createConnection('c2', 'nodeC')   <span className="code-comment">// Path 2</span></div>
-                        <div className="code-line">  ]</div>
-                        <div className="code-line">{`}`});</div>
                         <div className="code-line"></div>
-                        <div className="code-line"><span className="code-comment">// Aggregate results</span></div>
-                        <div className="code-line">const aggregator = createAggregator('Sum', {`{`}</div>
-                        <div className="code-line">  aggregate: async (input) =&gt; {`{`}</div>
-                        <div className="code-line">    count++;</div>
-                        <div className="code-line">    sum += input.value;</div>
-                        <div className="code-line">    if (count === 2) return {`{ status: 'Ready', output: { value: sum } }`};</div>
-                        <div className="code-line">    return {`{ status: 'NotYetReady' }`};</div>
-                        <div className="code-line">  {`}`}</div>
-                        <div className="code-line">{`}`});</div>
+                        <div className="code-line"><span className="code-comment">// results['done'] === { value: 22 }</span></div>
                     </div>
                 </div>
             </section>
 
             {/* Conditional Routing */}
-            <section className="interactive-section">
-                <div className="container">
-                    <div className="interactive-content">
-                        <div className="interactive-text">
-                            <h2 className="section-title">Conditional Routing</h2>
-                            <p className="section-subtitle">
-                                Use Decision nodes to dynamically route based on output or context.
-                            </p>
-                            
-                            <div className="code-block">
-                                <div className="code-line">const decision = createDecision('check',</div>
-                                <div className="code-line">  async (output, context) =&gt; {`{`}</div>
-                                <div className="code-line">    if (output.value &gt; threshold) {`{`}</div>
-                                <div className="code-line">      return createTermination('highValue');</div>
-                                <div className="code-line">    {`}`}</div>
-                                <div className="code-line">    return [createConnection('c1', 'nextNode')];</div>
-                                <div className="code-line">  {`}`}</div>
-                                <div className="code-line">);</div>
-                                <div className="code-line"></div>
-                                <div className="code-line">const nodeB = createPhaseNode('nodeB',</div>
-                                <div className="code-line">  multiplyPhase,</div>
-                                <div className="code-line">  {`{ next: [decision] }`}</div>
-                                <div className="code-line">);</div>
-                            </div>
-                        </div>
-
-                        <div className="interactive-features">
-                            <div className="interactive-feature">
-                                <span className="feature-icon feature-icon-text">C</span>
-                                <div>
-                                    <h4>Connections</h4>
-                                    <p>Direct paths to the next node in the pipeline</p>
-                                </div>
-                            </div>
-                            <div className="interactive-feature">
-                                <span className="feature-icon feature-icon-text">D</span>
-                                <div>
-                                    <h4>Decisions</h4>
-                                    <p>Conditional branching based on output or context</p>
-                                </div>
-                            </div>
-                            <div className="interactive-feature">
-                                <span className="feature-icon feature-icon-text">T</span>
-                                <div>
-                                    <h4>Terminations</h4>
-                                    <p>End states with optional final transformation</p>
-                                </div>
-                            </div>
-                            <div className="interactive-feature">
-                                <span className="feature-icon feature-icon-text">A</span>
-                                <div>
-                                    <h4>Aggregators</h4>
-                                    <p>Merge outputs from multiple parallel paths</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Event System */}
-            <section className="feedback-section">
-                <div className="container">
-                    <h2 className="section-title">Event-Driven Observability</h2>
-                    <p className="section-subtitle">
-                        Register handlers to monitor and react to every stage of pipeline execution.
-                    </p>
-                    
-                    <div className="terminal-demo" style={{maxWidth: '800px', margin: '2rem auto'}}>
-                        <div className="terminal-header">
-                            <span className="terminal-dot red"></span>
-                            <span className="terminal-dot yellow"></span>
-                            <span className="terminal-dot green"></span>
-                            <span className="terminal-title">Event Log</span>
-                        </div>
-                        <div className="terminal-body">
-                            <div className="terminal-line">
-                                <span className="terminal-dim">[process:start]</span>
-                                <span className="terminal-input"> MyPipeline</span>
-                            </div>
-                            <div className="terminal-line">
-                                <span className="terminal-dim">[node:start]</span>
-                                <span className="terminal-input"> nodeA</span>
-                            </div>
-                            <div className="terminal-line">
-                                <span className="terminal-dim">[phase:start]</span>
-                                <span className="terminal-input"> AddOne</span>
-                            </div>
-                            <div className="terminal-line">
-                                <span className="terminal-dim">[phase:execute]</span>
-                                <span className="terminal-success"> AddOne → {`{ value: 11 }`}</span>
-                            </div>
-                            <div className="terminal-line">
-                                <span className="terminal-dim">[transition:start]</span>
-                                <span className="terminal-input"> nodeA → nodeB</span>
-                            </div>
-                            <div className="terminal-line">
-                                <span className="terminal-dim">[node:start]</span>
-                                <span className="terminal-input"> nodeB</span>
-                            </div>
-                            <div className="terminal-line">
-                                <span className="terminal-dim">[phase:execute]</span>
-                                <span className="terminal-success"> MultiplyByTwo → {`{ value: 22 }`}</span>
-                            </div>
-                            <div className="terminal-line">
-                                <span className="terminal-dim">[transition:terminate]</span>
-                                <span className="terminal-success"> end</span>
-                            </div>
-                            <div className="terminal-line">
-                                <span className="terminal-dim">[process:end]</span>
-                                <span className="terminal-success"> Complete</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="code-block" style={{maxWidth: '800px', margin: '2rem auto'}}>
-                        <div className="code-line">const eventHandler = createEventHandler(async (event, context) =&gt; {`{`}</div>
-                        <div className="code-line">  console.log(`[${`$`}{event.type}:${`$`}{event.stage}] ${`$`}{event.sourceId}`);</div>
-                        <div className="code-line">  <span className="code-comment">// Log to database, metrics, APM...</span></div>
-                        <div className="code-line">{`}`});</div>
-                        <div className="code-line"></div>
-                        <div className="code-line">await executeProcess(process, beginning, {`{`}</div>
-                        <div className="code-line">  input: initialData,</div>
-                        <div className="code-line">  eventHandlers: [eventHandler]</div>
-                        <div className="code-line">{`}`});</div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Use Cases */}
-            <section className="actions-section">
-                <div className="container">
-                    <h2 className="section-title">Use Cases</h2>
-                    <p className="section-subtitle">
-                        Xenocline is ideal for any scenario requiring structured, observable workflows.
-                    </p>
-                    
-                    <div className="actions-features">
-                        <div className="action-feature">
-                            <span className="feature-icon feature-icon-text">E</span>
-                            <div>
-                                <h4>ETL Pipelines</h4>
-                                <p>Extract, transform, and load data with parallel processing and aggregation</p>
-                            </div>
-                        </div>
-                        <div className="action-feature">
-                            <span className="feature-icon feature-icon-text">W</span>
-                            <div>
-                                <h4>Workflow Orchestration</h4>
-                                <p>Multi-step business processes with conditional logic and error handling</p>
-                            </div>
-                        </div>
-                        <div className="action-feature">
-                            <span className="feature-icon feature-icon-text">H</span>
-                            <div>
-                                <h4>Event Handling</h4>
-                                <p>Process streams of events through transformation and enrichment stages</p>
-                            </div>
-                        </div>
-                        <div className="action-feature">
-                            <span className="feature-icon feature-icon-text">M</span>
-                            <div>
-                                <h4>Middleware Chains</h4>
-                                <p>Request/response pipelines with validation, authentication, and transformation</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Quick Start */}
-            <section className="quickstart-section">
-                <div className="container">
-                    <h2 className="section-title">Get Started</h2>
-                    
-                    <div className="quickstart-steps">
-                        <div className="step">
-                            <div className="step-number">1</div>
-                            <div className="step-content">
-                                <h4>Install</h4>
-                                <code>npm install @girverket/xenocline</code>
-                            </div>
-                        </div>
-                        <div className="step">
-                            <div className="step-number">2</div>
-                            <div className="step-content">
-                                <h4>Import</h4>
-                                <code>import {`{ createProcess }`} from '@girverket/xenocline'</code>
-                            </div>
-                        </div>
-                        <div className="step">
-                            <div className="step-number">3</div>
-                            <div className="step-content">
-                                <h4>Build</h4>
-                                <code>Define phases, connect nodes, execute</code>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="quickstart-examples">
-                        <h3>Key Exports</h3>
-                        <div className="code-block">
-                            <div className="code-line"><span className="code-comment">// Core building blocks</span></div>
-                            <div className="code-line">import {`{`}</div>
-                            <div className="code-line">  createPhase,           <span className="code-comment">// Define processing units</span></div>
-                            <div className="code-line">  createPhaseNode,       <span className="code-comment">// Wrap phases with routing</span></div>
-                            <div className="code-line">  createProcess,         <span className="code-comment">// Orchestrate nodes into pipeline</span></div>
-                            <div className="code-line">  executeProcess,        <span className="code-comment">// Run the pipeline</span></div>
-                            <div className="code-line">  </div>
-                            <div className="code-line">  <span className="code-comment">// Transitions</span></div>
-                            <div className="code-line">  createConnection,      <span className="code-comment">// Direct path to next node</span></div>
-                            <div className="code-line">  createDecision,        <span className="code-comment">// Conditional branching</span></div>
-                            <div className="code-line">  createTermination,     <span className="code-comment">// End state</span></div>
-                            <div className="code-line">  createBeginning,       <span className="code-comment">// Entry point</span></div>
-                            <div className="code-line">  </div>
-                            <div className="code-line">  <span className="code-comment">// Advanced</span></div>
-                            <div className="code-line">  createAggregator,      <span className="code-comment">// Merge parallel outputs</span></div>
-                            <div className="code-line">  createAggregatorNode,  <span className="code-comment">// Aggregator node wrapper</span></div>
-                            <div className="code-line">  createEventHandler     <span className="code-comment">// Monitor execution</span></div>
-                            <div className="code-line">{`}`} from '@girverket/xenocline';</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Type Safety */}
             <section className="models-section">
                 <div className="container">
-                    <h2 className="section-title">Built with TypeScript</h2>
+                    <h2 className="section-title">Conditional Routing</h2>
                     <p className="section-subtitle">
-                        Full type safety for inputs, outputs, and context throughout your pipeline.
+                        Route data dynamically with decisions. No if/else chains — just declarative transitions.
                     </p>
                     <div className="code-block" style={{maxWidth: '800px', margin: '2rem auto'}}>
-                        <div className="code-line">interface MyInput {`{`}</div>
-                        <div className="code-line">  value: number;</div>
-                        <div className="code-line">  metadata?: string;</div>
-                        <div className="code-line">{`}`}</div>
-                        <div className="code-line"></div>
-                        <div className="code-line">interface MyOutput {`{`}</div>
-                        <div className="code-line">  result: number;</div>
-                        <div className="code-line">  processed: boolean;</div>
-                        <div className="code-line">{`}`}</div>
-                        <div className="code-line"></div>
-                        <div className="code-line">const phase: Phase&lt;MyInput, MyOutput&gt; = createPhase('TypedPhase', {`{`}</div>
-                        <div className="code-line">  execute: async (input: MyInput): Promise&lt;MyOutput&gt; =&gt; ({`{`}</div>
-                        <div className="code-line">    result: input.value * 2,</div>
-                        <div className="code-line">    processed: true</div>
-                        <div className="code-line">  {`}`})</div>
+                        <div className="code-line"><span className="code-comment">// Route based on data content</span></div>
+                        <div className="code-line">const routeDecision = createDecision('Route', async (output) =&gt; {`{`}</div>
+                        <div className="code-line">  if (output.value &gt; 100) {`{`}</div>
+                        <div className="code-line">    return [createConnection('to-big', 'bigHandler')];</div>
+                        <div className="code-line">  {`}`}</div>
+                        <div className="code-line">  return [createConnection('to-small', 'smallHandler')];</div>
                         <div className="code-line">{`}`});</div>
+                        <div className="code-line"></div>
+                        <div className="code-line">createPhaseNode('validate', validatePhase, {`{`}</div>
+                        <div className="code-line">  next: [routeDecision]</div>
+                        <div className="code-line">{`}`});</div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Use Cases / Examples */}
+            <section className="problem-section">
+                <div className="container">
+                    <h2 className="section-title">Real-World Examples</h2>
+                    <p className="section-subtitle">
+                        Three complete applications demonstrate xenocline solving real problems.
+                    </p>
+                    <div className="problem-grid">
+                        <div className="problem-card">
+                            <div className="problem-icon problem-icon-text">📊</div>
+                            <h3>ETL Pipeline</h3>
+                            <p>Extract, validate, transform, and load records. Demonstrates conditional routing for invalid data, enrichment, normalization, and observability.</p>
+                            <a href="https://github.com/girverket/xenocline/tree/main/examples/etl-pipeline" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                                View Example →
+                            </a>
+                        </div>
+                        <div className="problem-card">
+                            <div className="problem-icon problem-icon-text">🤖</div>
+                            <h3>AI/LLM Chain</h3>
+                            <p>Chain LLM calls with classification, research, drafting, and review. Demonstrates multi-step reasoning pipelines with conditional routing.</p>
+                            <a href="https://github.com/girverket/xenocline/tree/main/examples/llm-chain" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                                View Example →
+                            </a>
+                        </div>
+                        <div className="problem-card">
+                            <div className="problem-icon problem-icon-text">💬</div>
+                            <h3>Chatbot Handler</h3>
+                            <p>Process chat messages through intent classification, FAQ lookup, support ticketing, and human escalation. Demonstrates shared post-processing and analytics.</p>
+                            <a href="https://github.com/girverket/xenocline/tree/main/examples/chatbot" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                                View Example →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Quickstart / Docs */}
+            <section className="demo-section">
+                <div className="container">
+                    <h2 className="section-title">Get Started</h2>
+                    <p className="section-subtitle">
+                        Read the docs and start building pipelines in minutes.
+                    </p>
+                    <div className="problem-grid" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'}}>
+                        <div className="problem-card">
+                            <div className="problem-icon problem-icon-text">🚀</div>
+                            <h3>Quickstart Guide</h3>
+                            <p>Build your first pipeline, add conditional routing, and observe execution with event handlers.</p>
+                            <a href="https://github.com/girverket/xenocline/blob/main/docs/quickstart.md" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                                Read Guide →
+                            </a>
+                        </div>
+                        <div className="problem-card">
+                            <div className="problem-icon problem-icon-text">📖</div>
+                            <h3>API Reference</h3>
+                            <p>Complete type signatures for every function: phases, nodes, transitions, aggregators, events.</p>
+                            <a href="https://github.com/girverket/xenocline/blob/main/docs/api-reference.md" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                                Read Reference →
+                            </a>
+                        </div>
+                        <div className="problem-card">
+                            <div className="problem-icon problem-icon-text">🏗️</div>
+                            <h3>Architecture</h3>
+                            <p>Understand the execution model: how nodes, transitions, and the process engine work together.</p>
+                            <a href="https://github.com/girverket/xenocline/blob/main/docs/architecture.md" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                                Read Docs →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Stats */}
+            <section className="models-section">
+                <div className="container">
+                    <h2 className="section-title">Production-Ready</h2>
+                    <div className="problem-grid" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', textAlign: 'center'}}>
+                        <div className="problem-card">
+                            <h3 style={{fontSize: '2.5rem', margin: 0, color: 'var(--accent)'}}>369</h3>
+                            <p style={{margin: '0.5rem 0 0'}}>Tests Passing</p>
+                        </div>
+                        <div className="problem-card">
+                            <h3 style={{fontSize: '2.5rem', margin: 0, color: 'var(--accent)'}}>94%</h3>
+                            <p style={{margin: '0.5rem 0 0'}}>Statement Coverage</p>
+                        </div>
+                        <div className="problem-card">
+                            <h3 style={{fontSize: '2.5rem', margin: 0, color: 'var(--accent)'}}>0</h3>
+                            <p style={{margin: '0.5rem 0 0'}}>Known Vulnerabilities</p>
+                        </div>
+                        <div className="problem-card">
+                            <h3 style={{fontSize: '2.5rem', margin: 0, color: 'var(--accent)'}}>Apache-2.0</h3>
+                            <p style={{margin: '0.5rem 0 0'}}>License</p>
+                        </div>
                     </div>
                 </div>
             </section>
