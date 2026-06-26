@@ -101,7 +101,7 @@ function App() {
                         <div className="code-line">  process, beginning, {`{ input: { value: 10 } }`}</div>
                         <div className="code-line">);</div>
                         <div className="code-line"></div>
-                        <div className="code-line"><span className="code-comment">// results['done'] === { value: 22 }</span></div>
+                        <div className="code-line"><span className="code-comment">// results['done'] === {`{ value: 22 }`}</span></div>
                     </div>
                 </div>
             </section>
