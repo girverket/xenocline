@@ -657,6 +657,7 @@ section {
     font-size: 0.85rem;
     line-height: 1.8;
     overflow-x: auto;
+    text-align: left;
 }
 
 .code-line {
