@@ -82,4 +82,11 @@ export default defineConfig([
                 ]
             }]
         },
+    },
+
+    {
+        files: ["examples/**/*.ts"],
+        rules: {
+            "no-console": "off",
+        },
     }]);
