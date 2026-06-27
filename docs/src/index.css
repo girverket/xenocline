@@ -658,15 +658,15 @@ section {
     line-height: 1.8;
     overflow-x: auto;
     text-align: left;
+    max-width: 800px;
+    margin: 2rem auto;
+    white-space: pre;
+    tab-size: 2;
 }
 
-.code-line {
-    min-height: 1.5em;
+.code-block code {
+    font-family: inherit;
     color: var(--color-text);
-}
-
-.code-comment {
-    color: var(--color-text-dim);
 }
 
 /* ========================================

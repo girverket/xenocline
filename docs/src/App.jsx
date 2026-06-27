@@ -1,5 +1,13 @@
 import React from 'react'
 
+function CodeBlock({ children }) {
+    return (
+        <pre className="code-block">
+            <code>{children}</code>
+        </pre>
+    )
+}
+
 function App() {
     return (
         <div className="site">
@@ -74,35 +82,48 @@ function App() {
                     <p className="section-subtitle">
                         Define phases, connect them, and execute. Xenocline handles orchestration and lifecycle.
                     </p>
-                    
-                    <div className="code-block" style={{maxWidth: '800px', margin: '2rem auto'}}>
-                        <div className="code-line"><span className="code-comment">// 1. Define phases</span></div>
-                        <div className="code-line">const addPhase = createPhase('AddOne', {`{`}</div>
-                        <div className="code-line">  execute: async (input) =&gt; ({`{ value: input.value + 1 }`})</div>
-                        <div className="code-line">{`}`});</div>
-                        <div className="code-line"></div>
-                        <div className="code-line">const multiplyPhase = createPhase('Multiply', {`{`}</div>
-                        <div className="code-line">  execute: async (input) =&gt; ({`{ value: input.value * 2 }`})</div>
-                        <div className="code-line">{`}`});</div>
-                        <div className="code-line"></div>
-                        <div className="code-line"><span className="code-comment">// 2. Connect into a pipeline</span></div>
-                        <div className="code-line">const process = createProcess('MyPipeline', {`{`}</div>
-                        <div className="code-line">  phases: {`{`}</div>
-                        <div className="code-line">    add: createPhaseNode('add', addPhase,</div>
-                        <div className="code-line">      {`{ next: [createConnection('to-multiply', 'multiply')] }`}),</div>
-                        <div className="code-line">    multiply: createPhaseNode('multiply', multiplyPhase,</div>
-                        <div className="code-line">      {`{ next: createTermination('done') }`})</div>
-                        <div className="code-line">  {`}`}</div>
-                        <div className="code-line">{`}`});</div>
-                        <div className="code-line"></div>
-                        <div className="code-line"><span className="code-comment">// 3. Execute</span></div>
-                        <div className="code-line">const beginning = createBeginning('begin', 'add');</div>
-                        <div className="code-line">const [results] = await executeProcess(</div>
-                        <div className="code-line">  process, beginning, {`{ input: { value: 10 } }`}</div>
-                        <div className="code-line">);</div>
-                        <div className="code-line"></div>
-                        <div className="code-line"><span className="code-comment">// results['done'] === {`{ value: 22 }`}</span></div>
-                    </div>
+
+                    <CodeBlock>{`// 1. Define phases — each is a pure async function
+const validate = createPhase('Validate', {
+  execute: async (order) => {
+    if (!order.items.length) throw new Error('Empty order')
+    return order
+  }
+})
+
+const charge = createPhase('Charge', {
+  execute: async (order) => {
+    const payment = await stripe.charge(order.total)
+    return { ...order, paymentId: payment.id }
+  }
+})
+
+const fulfill = createPhase('Fulfill', {
+  execute: async (order) => {
+    await warehouse.ship(order.items, order.address)
+    return { orderId: order.id, status: 'shipped' }
+  }
+})
+
+// 2. Connect phases into a pipeline
+const process = createProcess('OrderPipeline', {
+  phases: {
+    validate: createPhaseNode('validate', validate,
+      { next: [createConnection('to-charge', 'charge')] }),
+    charge: createPhaseNode('charge', charge,
+      { next: [createConnection('to-fulfill', 'fulfill')] }),
+    fulfill: createPhaseNode('fulfill', fulfill,
+      { next: createTermination('done') })
+  }
+})
+
+// 3. Execute
+const beginning = createBeginning('begin', 'validate')
+const [results] = await executeProcess(
+  process, beginning, { input: order }
+)
+
+// results['done'] === { orderId: 'ord_123', status: 'shipped' }`}</CodeBlock>
                 </div>
             </section>
 
@@ -113,19 +134,54 @@ function App() {
                     <p className="section-subtitle">
                         Route data dynamically with decisions. No if/else chains — just declarative transitions.
                     </p>
-                    <div className="code-block" style={{maxWidth: '800px', margin: '2rem auto'}}>
-                        <div className="code-line"><span className="code-comment">// Route based on data content</span></div>
-                        <div className="code-line">const routeDecision = createDecision('Route', async (output) =&gt; {`{`}</div>
-                        <div className="code-line">  if (output.value &gt; 100) {`{`}</div>
-                        <div className="code-line">    return [createConnection('to-big', 'bigHandler')];</div>
-                        <div className="code-line">  {`}`}</div>
-                        <div className="code-line">  return [createConnection('to-small', 'smallHandler')];</div>
-                        <div className="code-line">{`}`});</div>
-                        <div className="code-line"></div>
-                        <div className="code-line">createPhaseNode('validate', validatePhase, {`{`}</div>
-                        <div className="code-line">  next: [routeDecision]</div>
-                        <div className="code-line">{`}`});</div>
-                    </div>
+                    <CodeBlock>{`// Route orders: large orders need manual review
+const routeByAmount = createDecision('RouteByAmount', async (order) => {
+  if (order.total > 1000) {
+    return [createConnection('to-review', 'manualReview')]
+  }
+  return [createConnection('to-approve', 'autoApprove')]
+})
+
+// Attach the decision to the validate node's output
+createPhaseNode('validate', validatePhase, {
+  next: [routeByAmount]
+})
+
+// Both branches terminate independently
+//   validate → RouteByAmount → manualReview → done
+//                         └──→ autoApprove  → done`}</CodeBlock>
+                </div>
+            </section>
+
+            {/* Parallel Execution */}
+            <section className="demo-section">
+                <div className="container">
+                    <h2 className="section-title">Parallel Execution</h2>
+                    <p className="section-subtitle">
+                        Fan out to multiple branches and aggregate results. Built-in merge points collect outputs when all branches complete.
+                    </p>
+                    <CodeBlock>{`// Content moderation: run checks in parallel, merge results
+const spamCheck = createPhaseNode('spam', spamPhase,
+  { next: [createConnection('to-merge', 'aggregate')] })
+
+const sentiment = createPhaseNode('sentiment', sentimentPhase,
+  { next: [createConnection('to-merge', 'aggregate')] })
+
+// Aggregator waits for both branches, then merges
+const aggregate = createAggregatorNode('aggregate', {
+  aggregator: createAggregator('MergeResults', async (inputs) => {
+    const [spam, sentiment] = inputs
+    return {
+      isSpam: spam.score > 0.8,
+      sentiment: sentiment.label,
+      confidence: (spam.score + sentiment.score) / 2
+    }
+  }),
+  next: createTermination('done')
+})
+
+// Pipeline: ingest → ┬─ spam ──→ aggregate → done
+//                     └─ sentiment → aggregate ↗`}</CodeBlock>
                 </div>
             </section>
 
