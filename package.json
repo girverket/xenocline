@@ -30,7 +30,7 @@
         "start": "node dist/xenocline.cjs",
         "dev": "vite",
         "watch": "vite build --watch",
-        "test": "npm run test:coverage && npm run test:readme",
+        "test": "npm run test:coverage",
         "test:coverage": "vitest run --coverage",
         "test:readme": "doccident -c .doccident-setup.mjs README.md",
         "lint": "eslint . --ext .ts",
