@@ -119,16 +119,11 @@ export async function executeProcess<I extends Input = Input, O extends Output =
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         state.errors.push({ message: "Critical error during process execution", details: errorMessage, nodeId: initialNodeId });
-        // eslint-disable-next-line no-console
-        console.error("[EXECUTE_PROCESS_CRITICAL_ERROR]", { processName: processInstance.name, error: errorMessage, collectedErrors: state.errors });
+        throw error;
     }
 
     // Check for and reject any pending aggregators that never completed
     if (state.aggregatorDeferreds && state.aggregatorDeferreds.size > 0) {
-        const pendingNodeIds = state.pendingAggregatorIds ? state.pendingAggregatorIds().join(', ') : 'unknown';
-        // eslint-disable-next-line no-console
-        console.warn(`[EXECUTE_PROCESS_PENDING_AGGREGATORS] Process execution completed with pending aggregators: ${pendingNodeIds}. These will be rejected.`, { processName: processInstance.name, pendingNodeIds });
-
         // Reject all pending aggregators to prevent hanging promises
         for (const nodeId of state.aggregatorDeferreds.keys()) {
             const deferred = state.aggregatorDeferreds.get(nodeId);

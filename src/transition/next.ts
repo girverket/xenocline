@@ -18,7 +18,7 @@ export const isNext = <O extends Output = Output, C extends Context = Context>(i
     }
 
     if (item.length === 0) {
-        return true;
+        return false;
     }
 
     const firstElement = item[0];

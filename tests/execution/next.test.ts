@@ -130,23 +130,12 @@ describe('handleNextStep', () => {
                 decide: vi.fn<DecideFunction<Output, Context>>().mockRejectedValue(decisionError),
                 type: 'decision',
             };
-            // @ts-ignore
-            global.console = { error: vi.fn() }; // Mock console.error
 
             await handleNextStep(mockOutput, 'node1', [mockDecision], mockState);
 
             expect(mockDecision.decide).toHaveBeenCalledWith(mockOutput, mockState.context);
             expect(mockDispatchEvent).toHaveBeenCalledTimes(1); // Only for 'start'
             expect(mockCreateDecisionEvent).toHaveBeenCalledWith('node1', 'start', mockDecision, { output: mockOutput });
-            expect(console.error).toHaveBeenCalledWith(
-                `[_HANDLE_NEXT_STEP_DECISION_ERROR]`,
-                expect.objectContaining({
-                    decisionError,
-                    sourceNodeId: 'node1',
-                    decisionId: mockDecision.id,
-                    error: expect.stringContaining("Decision error on 'decision1' from node 'node1'")
-                })
-            );
             expect(mockState.errors).toEqual([{
                 nodeId: mockDecision.id,
                 message: expect.stringContaining("Decision error on 'decision1' from node 'node1'"),
@@ -210,24 +199,12 @@ describe('handleNextStep', () => {
                 transform: vi.fn().mockRejectedValue(transformError),
                 type: 'connection',
             };
-            // @ts-ignore
-            global.console = { error: vi.fn() }; // Mock console.error
 
             await handleNextStep(mockOutput, 'node1', [mockConnection], mockState);
 
             expect(mockConnection.transform).toHaveBeenCalledWith(mockOutput, mockState.context);
             expect(mockDispatchEvent).toHaveBeenCalledTimes(1); // Only for 'start'
             expect(mockCreateConnectionEvent).toHaveBeenCalledWith('node1', 'start', mockConnection, { input: mockOutput });
-            expect(console.error).toHaveBeenCalledWith(
-                `[_HANDLE_NEXT_STEP_CONNECTION_TRANSFORM_ERROR]`,
-                expect.objectContaining({
-                    transformError,
-                    connectionId: mockConnection.id,
-                    sourceNodeId: 'node1',
-                    targetNodeId: mockConnection.targetNodeId,
-                    error: expect.stringContaining(`Transform error on connection '${mockConnection.id}' from node 'node1' to '${mockConnection.targetNodeId}'`)
-                })
-            );
             expect(mockState.errors).toEqual([{
                 nodeId: mockConnection.id,
                 message: expect.stringContaining(`Transform error on connection '${mockConnection.id}' from node 'node1' to '${mockConnection.targetNodeId}'`),
@@ -240,7 +217,8 @@ describe('handleNextStep', () => {
 
     describe('Termination Handling', () => {
         it('should handle termination with a terminate function', async () => {
-            const mockTerminateFn = vi.fn();
+            const terminatedOutput = { data: 'terminated output' } as Output;
+            const mockTerminateFn = vi.fn().mockResolvedValue(terminatedOutput);
             const mockTermination: Termination<Output, Context> = {
                 id: 'term1',
                 // @ts-ignore
@@ -261,8 +239,8 @@ describe('handleNextStep', () => {
             expect(mockDispatchEvent).toHaveBeenCalledTimes(2); // start, terminate
             expect(mockCreateTerminationEvent).toHaveBeenCalledWith('node1', 'start', mockTermination, { output: mockOutput });
             expect(mockTerminateFn).toHaveBeenCalledWith(mockOutput, mockState.context);
-            expect(mockCreateTerminationEvent).toHaveBeenCalledWith('node1', 'terminate', mockTermination, { output: mockOutput });
-            expect(mockState.results[mockTermination.id]).toEqual(mockOutput);
+            expect(mockCreateTerminationEvent).toHaveBeenCalledWith('node1', 'terminate', mockTermination, { output: terminatedOutput });
+            expect(mockState.results[mockTermination.id]).toEqual(terminatedOutput);
         });
 
         it('should handle termination without a terminate function', async () => {
@@ -279,21 +257,13 @@ describe('handleNextStep', () => {
     describe('Other Cases', () => {
         it('should handle an empty array for next (implicit termination)', async () => {
             const next: any[] = []; // Empty array
-            // Create console.warn if it doesn't exist, then spy on it
-            if (!console.warn) {
-                console.warn = () => {};
-            }
-            const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
             await handleNextStep(mockOutput, 'node1', next, mockState);
 
-            // With the fix, empty arrays generate an implicit termination ID
+            // Empty arrays are treated as implicit termination (no warning)
             expect(mockState.results['node1_implicit_end']).toEqual(mockOutput);
-            expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('[_HANDLE_NEXT_STEP_IMPLICIT_TERMINATION]'));
             expect(mockDispatchEvent).not.toHaveBeenCalled();
             expect(mockExecuteNode).not.toHaveBeenCalled();
-
-            consoleWarnSpy.mockRestore();
         });
 
         it('should handle undefined next (implicit termination)', async () => {

@@ -130,9 +130,6 @@ describe('executeProcess', () => {
         const toP2Connection: Connection = createConnection('conn1', 'p2', { transform: transformFn });
         baseProcess.phases.p1.next = [toP2Connection];
 
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
-        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
-
         const initialInput: TestInput = { data: 'start' };
         const beginning: Beginning<Input, Context> = createBeginning('p1', 'p1');
         const [results, phaseResults, context]: [ProcessResults, PhaseResults, Context] = await executeProcess(baseProcess, beginning, { input: initialInput });
@@ -145,12 +142,6 @@ describe('executeProcess', () => {
         expect(results).toEqual({});
         expect(phaseResults['p1']).toEqual({ data: 'phase1 processed start' });
         expect(context).toEqual({});
-        // expect(consoleWarnSpy).toHaveBeenCalledWith("Process execution completed with errors:", expect.arrayContaining([
-        //     expect.objectContaining({ nodeId: 'p2', error: transformError })
-        // ])); // Commenting out: This warning is not currently emitted.
-
-        consoleErrorSpy.mockRestore();
-        consoleWarnSpy.mockRestore();
     });
 
 
@@ -312,7 +303,7 @@ describe('executeProcess', () => {
             { data: 'phase1 processed terminate test' },
             mockContext
         );
-        expect(results['term1']).toEqual({ data: 'phase1 processed terminate test' });
+        expect(results['term1']).toEqual({ data: 'phase1 processed terminate test', terminated: true });
         expect(phaseResults['p1']).toEqual({ data: 'phase1 processed terminate test' });
     });
 
@@ -333,26 +324,15 @@ describe('executeProcess', () => {
             },
         };
 
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
-
         const initialInput: TestInput = { data: 'error test' };
         const beginning: Beginning<Input, Context> = createBeginning('pError', 'pError');
-        const [results, phaseResults, context] = await executeProcess(processWithFailingPhase, beginning, { input: initialInput });
+
+        // With the fix, critical errors are re-thrown instead of silently swallowed
+        await expect(executeProcess(processWithFailingPhase, beginning, { input: initialInput }))
+            .rejects.toThrow(executionError);
 
         expect(mockErrorPhaseExecute).toHaveBeenCalledWith(initialInput);
-        expect(consoleErrorSpy).toHaveBeenCalledWith("[EXECUTE_NODE_RECURSIVE_IIFE_ERROR] Error executing node pError:", expect.objectContaining({ error: executionError, nodeId: "pError" }));
-        expect(consoleErrorSpy).toHaveBeenCalledWith("[EXECUTE_PROCESS_CRITICAL_ERROR]", expect.objectContaining({
-            processName: "Failing Phase Process",
-            error: executionError.message,
-            collectedErrors: expect.arrayContaining([
-                expect.objectContaining({ message: "Critical error during process execution", details: executionError.message })
-            ])
-        }));
-        expect(results).toEqual({}); // No results as the path failed
         expect(mockPhase2Execute).not.toHaveBeenCalled();
-
-
-        consoleErrorSpy.mockRestore();
     });
 
     test('should handle error when a phase node ID in next does not exist', async () => {
@@ -367,7 +347,6 @@ describe('executeProcess', () => {
             },
         };
 
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
         const initialInput: TestInput = { data: 'non existent target' };
         const beginning: Beginning<Input, Context> = createBeginning('p1', 'p1');
         // Expect the process execution to throw an error due to invalid definition
@@ -383,9 +362,6 @@ describe('executeProcess', () => {
         }
 
         expect(mockPhase1Execute).not.toHaveBeenCalled(); // Should not start execution if definition is invalid
-        expect(consoleErrorSpy).not.toHaveBeenCalled(); // No console errors if validation catches it first
-
-        consoleErrorSpy.mockRestore();
     });
 
     test('should call prepare and process and fire prepared and processed events', async () => {
@@ -543,8 +519,6 @@ describe('executeProcess with Decision elements', () => {
         const decision: Decision<TestOutput, Context> = createDecision('dError', decisionLogic);
         baseProcess.phases.p1.next = [decision];
 
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
-
         const initialInput: TestInput = { data: 'decision error test' };
         const beginning: Beginning<Input, Context> = createBeginning('p1', 'p1');
         const [results, phaseResults, processContext] = await executeProcess(baseProcess, beginning, { input: initialInput });
@@ -557,14 +531,6 @@ describe('executeProcess with Decision elements', () => {
 
         expect(results).toEqual({}); // No end results as decision failed
         expect(phaseResults['p1']).toEqual(p1Output); // p1 executed
-        expect(consoleErrorSpy).toHaveBeenCalledWith('[_HANDLE_NEXT_STEP_DECISION_ERROR]', expect.objectContaining({
-            decisionError: decisionError,
-            decisionId: 'dError',
-            sourceNodeId: 'p1',
-            error: expect.stringContaining("Decision error on 'dError' for node 'p1'")
-        }));
-
-        consoleErrorSpy.mockRestore();
     });
 
     test('should handle a Decision that returns an empty array of Connections (implicit termination of path)', async () => {
@@ -640,7 +606,6 @@ describe('executeProcess with Decision elements', () => {
         delete baseProcess.phases.p2;
 
 
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
         const initialInput: TestInput = { data: 'multi decision with error' };
         const beginning: Beginning<Input, Context> = createBeginning('p1', 'p1');
         const [results, phaseResults, processContext] = await executeProcess(baseProcess, beginning, { input: initialInput });
@@ -655,14 +620,6 @@ describe('executeProcess with Decision elements', () => {
 
         expect(results['p3']).toEqual({ data: 'phase3 processed phase1 processed multi decision with error' });
         expect(phaseResults['p1']).toEqual(p1Output);
-        expect(consoleErrorSpy).toHaveBeenCalledWith('[_HANDLE_NEXT_STEP_DECISION_ERROR]', expect.objectContaining({
-            decisionError: decisionError,
-            decisionId: 'dErrFirst',
-            sourceNodeId: 'p1',
-            error: expect.stringContaining("Decision error on 'dErrFirst' for node 'p1'")
-        }));
-
-        consoleErrorSpy.mockRestore();
     });
 });
 

@@ -251,4 +251,4 @@ npm run coverage  # Generate coverage report (94% statements)
 
 ## License
 
-Apache-2.0 — Copyright 2025 Max Drellin
+Apache-2.0 — Copyright 2025 Tim O'Brien

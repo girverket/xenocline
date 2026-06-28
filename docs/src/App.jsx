@@ -197,7 +197,7 @@ const aggregate = createAggregatorNode('aggregate', {
                             <div className="problem-icon problem-icon-text">📊</div>
                             <h3>ETL Pipeline</h3>
                             <p>Extract, validate, transform, and load records. Demonstrates conditional routing for invalid data, enrichment, normalization, and observability.</p>
-                            <a href="https://github.com/girverket/xenocline/tree/main/examples/etl-pipeline" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                            <a href="https://github.com/girverket/xenocline/tree/working/examples/etl-pipeline" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
                                 View Example →
                             </a>
                         </div>
@@ -205,7 +205,7 @@ const aggregate = createAggregatorNode('aggregate', {
                             <div className="problem-icon problem-icon-text">🤖</div>
                             <h3>AI/LLM Chain</h3>
                             <p>Chain LLM calls with classification, research, drafting, and review. Demonstrates multi-step reasoning pipelines with conditional routing.</p>
-                            <a href="https://github.com/girverket/xenocline/tree/main/examples/llm-chain" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                            <a href="https://github.com/girverket/xenocline/tree/working/examples/llm-chain" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
                                 View Example →
                             </a>
                         </div>
@@ -213,7 +213,7 @@ const aggregate = createAggregatorNode('aggregate', {
                             <div className="problem-icon problem-icon-text">💬</div>
                             <h3>Chatbot Handler</h3>
                             <p>Process chat messages through intent classification, FAQ lookup, support ticketing, and human escalation. Demonstrates shared post-processing and analytics.</p>
-                            <a href="https://github.com/girverket/xenocline/tree/main/examples/chatbot" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                            <a href="https://github.com/girverket/xenocline/tree/working/examples/chatbot" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
                                 View Example →
                             </a>
                         </div>
@@ -233,7 +233,7 @@ const aggregate = createAggregatorNode('aggregate', {
                             <div className="problem-icon problem-icon-text">🚀</div>
                             <h3>Quickstart Guide</h3>
                             <p>Build your first pipeline, add conditional routing, and observe execution with event handlers.</p>
-                            <a href="https://github.com/girverket/xenocline/blob/main/docs/quickstart.md" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                            <a href="https://github.com/girverket/xenocline/blob/working/docs/quickstart.md" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
                                 Read Guide →
                             </a>
                         </div>
@@ -241,7 +241,7 @@ const aggregate = createAggregatorNode('aggregate', {
                             <div className="problem-icon problem-icon-text">📖</div>
                             <h3>API Reference</h3>
                             <p>Complete type signatures for every function: phases, nodes, transitions, aggregators, events.</p>
-                            <a href="https://github.com/girverket/xenocline/blob/main/docs/api-reference.md" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                            <a href="https://github.com/girverket/xenocline/blob/working/docs/api-reference.md" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
                                 Read Reference →
                             </a>
                         </div>
@@ -249,7 +249,7 @@ const aggregate = createAggregatorNode('aggregate', {
                             <div className="problem-icon problem-icon-text">🏗️</div>
                             <h3>Architecture</h3>
                             <p>Understand the execution model: how nodes, transitions, and the process engine work together.</p>
-                            <a href="https://github.com/girverket/xenocline/blob/main/docs/architecture.md" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
+                            <a href="https://github.com/girverket/xenocline/blob/working/docs/architecture.md" className="btn btn-secondary btn-small" target="_blank" rel="noopener noreferrer">
                                 Read Docs →
                             </a>
                         </div>
